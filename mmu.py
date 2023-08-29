@@ -11,6 +11,7 @@ class MMU:
 
     page_table = []             ## Page_table is a list of pages of the form -
                                 ## [[page_number, dirty_bit], ..., [page_number, dirty_bit]]
+                                ## dirty_bit is 1 if page has been written to, 0 otherwise
 
     def __init__(self, frames):
         self.frames = frames
@@ -30,7 +31,13 @@ class MMU:
         Params: page_number - The page number to be read
         Returns: Same return value as find_page_number()
         """
-        return self.find_page_number(page_number)
+
+        if self.find_page_number(page_number) != True:      # If page is not in page table
+            self.total_page_faults += 1 
+
+            if self.find_empty_frame() != True:             # If there are no empty frames
+                return False
+
 
     def write_memory(self, page_number):
         pass
@@ -39,12 +46,12 @@ class MMU:
         """ 
         Finds the page number in the page table and returns the index of the page.
         Params: page_number - The page number to be found
-        Returns: index of page_number in page_table, -1 if page_number not found 
+        Returns: index of page_number in page_table, False if page_number not found 
         """
         for i in range(len(self.page_table)):
             if self.page_table[i][0] == page_number:
                 return i
-        return -1
+        return False
     
     def find_empty_frame(self):
         """
