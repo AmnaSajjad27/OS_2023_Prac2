@@ -29,14 +29,13 @@ class MMU:
         This method is called when a page is read from memory.
         The method calls find_page_number to find the page number in the page table.
         Params: page_number - The page number to be read
-        Returns: Same return value as find_page_number()
+        Returns: ?
+        Don't use this method - use find_page_number instead
         """
 
         if self.find_page_number(page_number) != True:      # If page is not in page table
-            self.total_page_faults += 1 
+            return False
 
-            if self.find_empty_frame() != True:             # If there are no empty frames
-                return False
 
 
     def write_memory(self, page_number):
@@ -58,10 +57,11 @@ class MMU:
         
         """
         pages = [page[0] for page in self.page_table]  # List of page numbers in page table
-        if(pages.count(None) > 0):
-            return pages.index(None)                   # Return index of first empty frame
-
-        return False                                   # Return False if no empty frames
+        try:
+            if(pages.count(None) > 0):
+                return pages.index(None)                   # Return index of first empty frame
+        except ValueError:
+            return False                                   # Return False if no empty frames
         
 
     def set_debug(self):
