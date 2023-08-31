@@ -78,3 +78,5 @@ class MMU:
 
     def get_total_page_faults(self):
         return self.total_page_faults
+    
+
