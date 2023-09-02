@@ -40,19 +40,17 @@ class LruMMU(MMU):
                 # pop item removes the last inserted key-value pair and returns it
                 # the popped out page number is assigned to "evicted page" 
                 # value is ignored by _ because we dont need it
-                evicted_page, _ = self.cache.popitem(last = False)
-
+                # Evict a page and check its associated dirty bit
+                evicted_page, dirty_bit = self.cache.popitem(last=False)
+                if dirty_bit == 1:
+                    self.total_disk_writes += 1
+  
                 if self.debug_mode:
                     print(f"Page popped off frames {evicted_page}")
 
             # Add a new page to the cache frames 
-            self.cache[page_number] = None
-            index = self.find_empty_frame()
+            self.cache[page_number] = 0
 
-            if index is not None:
-                self.page_table[index][0] = page_number
-                self.cache[page_number] = None
-            
             # increment the number of disk reads
             self.total_disk_reads += 1
             
@@ -63,20 +61,43 @@ class LruMMU(MMU):
     def write_memory(self, page_number):
         # Check if in cache 
         if page_number in self.cache:
+
             # Dirty bit, write into disk
-            #set dirty bit here, set the second element of thed tuple 1 here 
-            index = self.find_page_number(page_number)
-            # update dirt bit
-            if index is not None:
-                self.cache.move_to_end(page_number)
-                if self.page_table[index][1] == 0:
-                    self.page_table[index][1] = 1
-                    self.total_disk_writes += 1
-            
+            self.cache.move_to_end(page_number)  
+            self.cache[page_number]=1
+                               
         else:
-            # not in cache, nothing needed
+            
+            self.total_disk_reads += 1
+            self.total_page_faults += 1
+        
+             # kick off the page and update the list of least recently used
+            if len(self.cache) >= self.frames:
+                # pop item removes the last inserted key-value pair and returns it
+                # the popped out page number is assigned to "evicted page" 
+                # value is ignored by _ because we dont need it
+                
+                evicted_page, dirty_bit = self.cache.popitem(last = False)
+                if dirty_bit == 1:
+                    self.total_disk_writes += 1
+
+
+                #for entry in self.page_table:
+                 #   if entry[0] == evicted_page and entry[1]==1:
+                  #      self.total_disk_writes += 1 
+                        
+                if self.debug_mode:
+                    print(f"Page popped off frames {evicted_page}")
+
+            # Add a new page to the cache frames 
+            
+            self.cache[page_number] = 1
+            
+                        
             if self.debug_mode:
                 print(f"Page required to be loaded from disk, not in memory {page_number}")
+
+
 
     def get_total_disk_reads(self):
         # return counter 
