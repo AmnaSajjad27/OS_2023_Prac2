@@ -60,6 +60,8 @@ class MMU:
         try:
             if(pages.count(None) > 0):
                 return pages.index(None)                   # Return index of first empty frame
+            else:
+                return False
         except ValueError:
             return False                                   # Return False if no empty frames
         
@@ -78,3 +80,5 @@ class MMU:
 
     def get_total_page_faults(self):
         return self.total_page_faults
+    
+
