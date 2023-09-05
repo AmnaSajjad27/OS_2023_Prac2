@@ -19,37 +19,41 @@ class ClockMMU(MMU):
         pass
 
     def read_memory(self, page_number):
-        empty_frame = self.find_empty_frame()
+        
         page_index = self.find_page_number(page_number)
         
         if page_index is not False:
         # Page is already in memory, update the use bit to 1
             self.page_table[page_index][2] = 1
+            return
             
-        elif empty_frame is not False:
+        empty_frame = self.find_empty_frame()
+        if empty_frame is not False:
             self.total_disk_reads+=1
             self.total_page_faults+=1
             self.page_table[empty_frame]=[page_number,0,1]
         else:
-            #self.total_disk_reads+=1
-            #self.total_page_faults+=1
+            self.total_disk_reads+=1
+            self.total_page_faults+=1
             self.replaceCLOCK(page_number,"r")
 
         
     def write_memory(self, page_number):
-        empty_frame = self.find_empty_frame()
         page_index = self.find_page_number(page_number)
         if page_index is not False:
             self.page_table[page_index][1] = 1
             self.page_table[page_index][2] = 1
             return
-        elif empty_frame is not False:
+        
+        empty_frame = self.find_empty_frame()
+
+        if empty_frame is not False:
             self.total_disk_reads+=1
             self.total_page_faults+=1
             self.page_table[empty_frame]=[page_number,1,1]
         else:
-            #self.total_disk_reads+=1
-            #self.total_page_faults+=1
+            self.total_disk_reads+=1
+            self.total_page_faults+=1
             self.replaceCLOCK(page_number,"w")
 
     def get_total_disk_reads(self):
@@ -65,10 +69,8 @@ class ClockMMU(MMU):
         return  self.total_page_faults
     
     def replaceCLOCK(self, page_number,operation):
-        self.total_disk_reads+=1
-        self.total_page_faults+=1
+
         while True:
-            #current_page = self.page_table[self.hand]
             
             if self.page_table[self.hand][2]== 0:  
                 if self.page_table[self.hand][1] == 0:
@@ -76,20 +78,19 @@ class ClockMMU(MMU):
                     if (operation=="r"):
                        self.page_table[self.hand] = [page_number, 0, 1] 
                     elif (operation == "w"):
-                       self.page_table[self.hand] = [page_number, 1, 0] 
+                       self.page_table[self.hand] = [page_number, 1, 1] 
 
                     self.hand = (self.hand + 1) % self.frames 
         
                     return
                     
                 else:
-                    print(page_number)
                     self.total_disk_writes += 1
 
                     if (operation=="r"):
                         self.page_table[self.hand] = [page_number, 0, 1]  
                     elif (operation == "w"):
-                        self.page_table[self.hand] = [page_number, 1, 0]  
+                        self.page_table[self.hand] = [page_number, 1, 1]  
 
                     self.hand = (self.hand + 1) % self.frames
                                     
