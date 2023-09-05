@@ -7,7 +7,6 @@ class LruMMU(MMU):
     def __init__(self, frames):
         super().__init__(frames)
         # Constructor logic for LruMMU
-        # self.frames = frames
         # Using an ordered dictionary to keep track of the order in what the pages were accessed in 
         self.cache = OrderedDict()
         # Flag to print debug info or not 
@@ -39,7 +38,6 @@ class LruMMU(MMU):
             if len(self.cache) >= self.frames:
                 # pop item removes the last inserted key-value pair and returns it
                 # the popped out page number is assigned to "evicted page" 
-                # value is ignored by _ because we dont need it
                 # Evict a page and check its associated dirty bit
                 evicted_page, dirty_bit = self.cache.popitem(last=False)
                 if dirty_bit == 1:
@@ -73,30 +71,21 @@ class LruMMU(MMU):
         
              # kick off the page and update the list of least recently used
             if len(self.cache) >= self.frames:
-                # pop item removes the last inserted key-value pair and returns it
                 # the popped out page number is assigned to "evicted page" 
-                # value is ignored by _ because we dont need it
                 
                 evicted_page, dirty_bit = self.cache.popitem(last = False)
                 if dirty_bit == 1:
                     self.total_disk_writes += 1
-
-
-                #for entry in self.page_table:
-                 #   if entry[0] == evicted_page and entry[1]==1:
-                  #      self.total_disk_writes += 1 
-                        
+    
                 if self.debug_mode:
                     print(f"Page popped off frames {evicted_page}")
 
             # Add a new page to the cache frames 
             
             self.cache[page_number] = 1
-            
                         
             if self.debug_mode:
                 print(f"Page required to be loaded from disk, not in memory {page_number}")
-
 
 
     def get_total_disk_reads(self):
