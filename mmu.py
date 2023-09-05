@@ -18,59 +18,46 @@ class MMU:
         self.total_disk_reads = 0
         self.total_disk_writes = 0
         self.total_page_faults = 0
-        self.debug_mode = ""
-
-        for i in range(frames):
-            self.page_table.append([None, None])
+        self.debug_mode = False
 
 
     def read_memory(self, page_number):
-        """ 
-        This method is called when a page is read from memory.
-        The method calls find_page_number to find the page number in the page table.
-        Params: page_number - The page number to be read
-        Returns: ?
-        Don't use this method - use find_page_number instead
-        """
-
-        if self.find_page_number(page_number) != True:      # If page is not in page table
-            return False
-
-
+        pass
 
     def write_memory(self, page_number):
         pass
 
     def find_page_number(self, page_number):
-        """ 
-        Finds the page number in the page table and returns the index of the page.
-        Params: page_number - The page number to be found
-        Returns: index of page_number in page_table, False if page_number not found 
-        """
-        for i in range(len(self.page_table)):
-            if self.page_table[i][0] == page_number:
-                return i
+
+        pages = [page[0] for page in self.page_table]
+
+        if page_number in pages:
+            return pages.index(page_number)
+        
+        self.total_page_faults += 1 
         return False
-    
+
     def find_empty_frame(self):
-        """
+
+        pages = [page[0] for page in self.page_table]
         
-        """
-        pages = [page[0] for page in self.page_table]  # List of page numbers in page table
-        try:
-            if(pages.count(None) > 0):
-                return pages.index(None)                   # Return index of first empty frame
-            else:
-                return False
-        except ValueError:
-            return False                                   # Return False if no empty frames
-        
+        free_frame_count = pages.count(None)
+
+        #return index of first free frame
+        if free_frame_count > 0:
+            try:
+                return pages.index(None)
+            except ValueError:
+                return -1
+            
+        return -1
+
 
     def set_debug(self):
-        self.debug_mode = "debug"
+        self.debug_mode = True
 
     def reset_debug(self):
-        self.debug_mode = "quiet"
+        self.debug_mode = False
 
     def get_total_disk_reads(self):
         return self.total_disk_reads

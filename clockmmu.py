@@ -4,20 +4,19 @@ from mmu import MMU
 class ClockMMU(MMU):
     def __init__(self, frames):
         super().__init__(frames)
+        
+        # Initialise page table
+        for i in range(frames):
+            self.page_table.append([None, None, None])
+            
         self.hand = 0 
-        self.total_disk_reads = 0
-        self.total_disk_writes = 0
-        self.total_page_faults = 0
-  
 
     def set_debug(self):
-        # TODO: Implement the method to set debug mode
-        pass
+        super().set_debug()
 
     def reset_debug(self):
-        # TODO: Implement the method to reset debug mode
-        pass
-
+        super().reset_debug()
+ 
     def read_memory(self, page_number):
         
         page_index = self.find_page_number(page_number)
@@ -28,13 +27,11 @@ class ClockMMU(MMU):
             return
             
         empty_frame = self.find_empty_frame()
-        if empty_frame is not False:
+        if empty_frame != -1:
             self.total_disk_reads+=1
-            self.total_page_faults+=1
             self.page_table[empty_frame]=[page_number,0,1]
         else:
             self.total_disk_reads+=1
-            self.total_page_faults+=1
             self.replaceCLOCK(page_number,"r")
 
         
@@ -47,13 +44,11 @@ class ClockMMU(MMU):
         
         empty_frame = self.find_empty_frame()
 
-        if empty_frame is not False:
+        if empty_frame != -1:
             self.total_disk_reads+=1
-            self.total_page_faults+=1
             self.page_table[empty_frame]=[page_number,1,1]
         else:
             self.total_disk_reads+=1
-            self.total_page_faults+=1
             self.replaceCLOCK(page_number,"w")
 
     def get_total_disk_reads(self):
